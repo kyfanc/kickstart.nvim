@@ -548,6 +548,9 @@ local on_attach = function(_, bufnr)
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
   end, { desc = 'Format current buffer with LSP' })
+
+  -- Format on save
+  vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
 end
 
 -- document existing key chains
@@ -594,7 +597,16 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  -- rust_analyzer = {},
+  rust_analyzer = {
+    cargo = {
+      allFeatures = true,
+    },
+    completion = {
+      postfix = {
+        enable = false,
+      },
+    },
+  },
   -- tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
