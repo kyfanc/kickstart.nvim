@@ -113,7 +113,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',  opts = {} },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -322,10 +322,10 @@ vim.keymap.set('n', '<C-h>', function()
   else
     return ":nohlsearch<CR>"
   end
-end, {expr = true, replace_keycodes = true, desc = 'stop search highlight' })
+end, { expr = true, replace_keycodes = true, desc = 'stop search highlight' })
 
 -- fast toggle buffers
-vim.keymap.set('n', '<leader><leader>', '<c-^>', {desc='fast toggle buffer'})
+vim.keymap.set('n', '<leader><leader>', '<c-^>', { desc = 'fast toggle buffer' })
 
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
@@ -336,8 +336,8 @@ vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- scoll page
-vim.keymap.set('n', 'K', '<C-u>', { desc='scroll page up' })
-vim.keymap.set('n', 'J', '<C-d>', { desc='scroll page down' })
+vim.keymap.set('n', 'K', '<C-u>', { desc = 'scroll page up' })
+vim.keymap.set('n', 'J', '<C-d>', { desc = 'scroll page down' })
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
@@ -550,7 +550,10 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 
   -- Format on save
-  vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
+  vim.cmd [[
+  autocmd BufWritePre * lua vim.lsp.buf.format()
+  autocmd BufWritePre * :%s/\s\+$//e
+  ]]
 end
 
 -- document existing key chains
