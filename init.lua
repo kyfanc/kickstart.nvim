@@ -180,8 +180,8 @@ require('lazy').setup({
         end, { desc = 'git diff against last commit' })
 
         -- Toggles
-        map('n', '<leader>tb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
-        map('n', '<leader>td', gs.toggle_deleted, { desc = 'toggle git show deleted' })
+        map('n', '<leader>vb', gs.toggle_current_line_blame, { desc = 'toggle git blame line' })
+        map('n', '<leader>vd', gs.toggle_deleted, { desc = 'toggle git show deleted' })
 
         -- Text object
         map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>', { desc = 'select git hunk' })
@@ -256,6 +256,7 @@ require('lazy').setup({
   },
 
   'mg979/vim-visual-multi',
+  'rust-lang/rust.vim',
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -411,15 +412,15 @@ end
 vim.api.nvim_create_user_command('LiveGrepGitRoot', live_grep_git_root, {})
 
 -- See `:help telescope.builtin`
-vim.keymap.set('n', '<leader>or', require('telescope.builtin').oldfiles, { desc = '[O]pen recently opened files' })
-vim.keymap.set('n', '<leader>ob', require('telescope.builtin').buffers, { desc = '[O]pen existing buffers' })
-vim.keymap.set('n', '<leader>f', function()
+vim.keymap.set('n', '<leader>fr', require('telescope.builtin').oldfiles, { desc = '[f]ind recently opened files' })
+vim.keymap.set('n', '<leader>fb', require('telescope.builtin').buffers, { desc = '[f]ind existing buffers' })
+vim.keymap.set('n', '<leader>ff', function()
   -- You can pass additional configuration to telescope to change theme, layout, etc.
   require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
     winblend = 0,
     previewer = false,
   })
-end, { desc = '[f] Fuzzily search in current buffer' })
+end, { desc = '[f]ind [f]uzzily search in current buffer' })
 
 local function telescope_live_grep_open_files()
   require('telescope.builtin').live_grep {
@@ -427,16 +428,24 @@ local function telescope_live_grep_open_files()
     prompt_title = 'Live Grep in Open Files',
   }
 end
-vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
-vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
-vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>p', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
-vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
-vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>p', require('telescope.builtin').find_files, { desc = '[f]ind [f]iles' })
+
+-- vim.keymap.set('n', '<leader>s/', telescope_live_grep_open_files, { desc = '[S]earch [/] in Open Files' })
+-- vim.keymap.set('n', '<leader>ss', require('telescope.builtin').builtin, { desc = '[S]earch [S]elect Telescope' })
+-- vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
+-- vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
+-- vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
+-- vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
+-- vim.keymap.set('n', '<leader>sG', ':LiveGrepGitRoot<cr>', { desc = '[S]earch by [G]rep on Git Root' })
+-- vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
+-- vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>Tc', function()
+  return ":tab RustTest -- --nocapture<CR>"
+end, { expr = true, replace_keycodes = true, desc = 'run [T]est at [c]ursor' })
+vim.keymap.set('n', '<leader>Ta', function()
+  return ":tab RustTest!<CR>"
+end, { expr = true, replace_keycodes = true, desc = 'run [T]est [a]ll tests' })
+
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
@@ -531,12 +540,10 @@ local on_attach = function(_, bufnr)
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
   nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-  nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
-
-  -- See `:help K` for why this keymap
-  nmap('?', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('??', vim.lsp.buf.signature_help, 'Signature Documentation')
+  nmap('<leader>d', vim.lsp.buf.hover, 'Hover Documentation')
+  nmap('<leader>t', vim.lsp.buf.signature_help, 'Signature Documentation')
+  nmap('<leader>fd', require('telescope.builtin').lsp_document_symbols, '[f]ind [d]ocument symbols')
+  nmap('<leader>fw', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[f]ind [w]orkspace symbols')
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
@@ -561,13 +568,12 @@ end
 -- document existing key chains
 require('which-key').register {
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  ['<leader>f'] = { name = '[f]find', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>t'] = { name = '[T]oggle', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  ['<leader>T'] = { name = '[T]est', _ = 'which_key_ignore' },
+  ['<leader>v'] = { name = 'Toggle [V]isual', _ = 'which_key_ignore' },
 }
 -- register which-key VISUAL mode
 -- required for visual <leader>hs (hunk stage) to work
